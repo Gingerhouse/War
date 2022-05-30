@@ -1,4 +1,3 @@
-#War
 ## Introduction:
 The game I got the idea from it was from the Kakegurui manga and putting the game they played into more general terms.
 
