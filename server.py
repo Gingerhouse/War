@@ -15,9 +15,10 @@ except socket.error as e:
 s.listen(8)
 print('Waiting for a connection...')
 
-def threaded_client(conn):
+
+def threaded_client(conn, player):
     conn.send(str.encode('Connected'))
-    reply = ''
+    reply = 'b '
 
     while True:
         try:
@@ -28,7 +29,7 @@ def threaded_client(conn):
                 print('Disconnected')
                 break
             else:
-                print('Received: ', reply)
+                print('Received: ', data)
                 print('Sending: ', reply)
             conn.sendall(str.encode(reply))
         except:
@@ -37,9 +38,10 @@ def threaded_client(conn):
     print('Lost Connection')
     conn.close()
 
-
+currentPlayer = 0
 while True:
     conn, addr = s.accept()
     print('Connected to:', addr)
 
-    start_new_thread(threaded_client(), (conn,))
+    start_new_thread(threaded_client(), (conn, currentPlayer))
+    currentPlayer += 1
