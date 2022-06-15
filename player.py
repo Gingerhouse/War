@@ -1,3 +1,5 @@
+import pygame
+
 class Player:
     def __init__(self, name, nation, pos):
         self.name = name
