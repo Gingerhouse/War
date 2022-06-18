@@ -9,21 +9,6 @@ class Player:
         self.action = []
         self.requests = []
 
-    def make_action(self):
-        pass
-
-    def make_request(self, pos, action):
-        pass
-
-    def answer(self, pos, ans):
-        pass
-
-    def end_round(self):
-        #points
-
-        self.action = []
-        self.requests = []
-
     def rename(self, name, nation):
         self.name = name
         self.nation = nation
