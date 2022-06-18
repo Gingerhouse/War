@@ -1,6 +1,6 @@
 import socket
 from _thread import *
-from player import Player
+from game import Game
 import pickle
 
 server = '192.168.1.219'
@@ -16,56 +16,65 @@ except socket.error as e:
 s.listen(8)
 print('Waiting for a connection...')
 
-players = [Player(), Player(), Player(), Player(), Player(), Player(), Player(), Player()]
+connected = set()
+games = {}
+idCount = 0
 
-def threaded_client(conn, player):
-    conn.send(pickle.dumps(players[player]))
+def threaded_client(conn, p, p2, gameId):
+    global idCount
+    conn.send(str.encode(str(p)))
+
     reply = ''
-
     while True:
+        data = conn.recv(4096).decode()
+
         try:
-            data = pickle.loads(conn.recv(2048))
-            players[player] = data
+            if gameId in games:
+                game = games[gameId]
 
-            if not data:
-                print('Disconnected')
-                break
+                if not data:
+                    break
+                else:
+                    if data == 'reset':
+                        game.reset()
+                    elif data == 'request':
+                        game.request(p, data)
+                    elif data == 'reply':
+                        game.reply(p, data)
+                    elif data == 'action':
+                        game.action(p, data)
+
+
+                    reply = game
+                    conn.sendall(pickle.dumps(reply))
             else:
-                reply = rep()
-
-                print('Received: ', data)
-                print('Sending: ', reply)
-            conn.sendall(pickle.dumps(reply))
+                break
         except:
             break
-
     print('Lost Connection')
+    try:
+        del games[gameId]
+        print('Closing Game:', gameId)
+    except:
+        pass
+    idCount -= 1
     conn.close()
 
-def rep(player):
-    rep = ''
-    if player == 1:
-        rep = players[0]
-    elif player == 2:
-        rep = players[1]
-    elif player == 3:
-        rep = players[2]
-    elif player == 4:
-        rep = players[3]
-    elif player == 5:
-        rep = players[4]
-    elif player == 6:
-        rep = players[5]
-    elif player == 7:
-        rep = players[6]
-    elif player == 8:
-        rep = players[7]
-    return rep
 
-currentPlayer = 0
+
+
+
 while True:
     conn, addr = s.accept()
     print('Connected to:', addr)
 
-    start_new_thread(threaded_client(), (conn, currentPlayer))
-    currentPlayer += 1
+    idCount += 1
+    p = 0
+    p2 = 1
+    gameId = (idCount - 1) // 8
+
+    if idCount % 8 == 1:
+        games[gameId] = Game(gameId)
+
+
+    start_new_thread(threaded_client(), (conn, p, p2, gameId))
